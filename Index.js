@@ -1,41 +1,34 @@
-class StringCalculator{
-    constructor(){
+class StringCalculator {
+    constructor() {
         this.callCount = 0;
     }
 
-    add(numbers){
+    add(numbers) {
         this.callCount++;
-
-        if(!numbers) return 0;
+        if (!numbers) return 0;
 
         let delimiter = /,|\n/;
-
-        if(numbers.startWith("//")){
-            const delimiterEnd = numbers.indexOf("\n");
-            delimiter = new RegExp(numbers.substring(2,delimiterEnd));
-            numbers = numbers.substring(delimiterEnd+1);
+        let customDelimiterMatch = numbers.match(/^\/\/(.*?)\n/);
+        
+        if (customDelimiterMatch) {
+            let rawDelimiter = customDelimiterMatch[1];
+            delimiter = new RegExp(rawDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+            numbers = numbers.slice(customDelimiterMatch[0].length);
         }
 
-        const tokens = numbers.split(delimiter);
-        const negativeNumbers = [];
-        let sum = 0;
-
-        for(let token of tokens){
-            const num = parseInt(token,10);
-            if(num<0){
-                negativeNumbers.push(num);
-            }
-            sum+=num;
-        }
-        if(negativeNumbers.length>0){
-            throw new Error(`negatives not allowed: ${begativeNumbers.join(",")}`);
+        let numArray = numbers.split(delimiter).map(Number);
+        let negativeNumbers = numArray.filter(n => n < 0);
+        
+        if (negativeNumbers.length > 0) {
+            throw new Error(`negatives not allowed: ${negativeNumbers.join(",")}`);
         }
 
-        return sum;
+        return numArray.reduce((sum, num) => sum + num, 0);
     }
 
     getCalledCount() {
         return this.callCount;
     }
 }
+
 module.exports = StringCalculator;
